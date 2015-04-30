@@ -25,89 +25,95 @@ import openfl.display.Tilesheet;
 // User types
 typedef TexturePackerFrame =
 {
-	name:String,
-	frame:TexturePackerRectangle,
-	rotated:Bool,
-	trimmed:Bool,
-	spriteSourceSize:TexturePackerRectangle,
-	sourceSize:TexturePackerSize
+    name:String,
+    frame:TexturePackerRectangle,
+    rotated:Bool,
+    trimmed:Bool,
+    spriteSourceSize:TexturePackerRectangle,
+    sourceSize:TexturePackerSize
 }
 
-typedef TexturePackerRectangle = 
+typedef TexturePackerRectangle =
 {
-	x:Int,
-	y:Int,
-	w:Int,
-	h:Int
+    x:Int,
+    y:Int,
+    w:Int,
+    h:Int
 }
 
-typedef TexturePackerSize = 
+typedef TexturePackerSize =
 {
-	w:Int,
-	h:Int
+    w:Int,
+    h:Int
 }
 
 // Importer
 class TexturePackerImport
 {
-	public static function parseJson(jsonString:String):Array<TexturePackerFrame>
-	{
-		return parseJsonObject(haxe.Json.parse(jsonString));
-	}
+    public static function parseJson(jsonString:String):Array<TexturePackerFrame>
+    {
+        return parseJsonObject(haxe.Json.parse(jsonString));
+    }
 
-	public static function parseJsonObject(json:Dynamic):Array<TexturePackerFrame>
-	{
-		var structuredJson:SheetJson = json;
+    public static function parseJsonObject(json:Dynamic):Array<TexturePackerFrame>
+    {
+        var structuredJson:SheetJson = json;
 
-		var frames:Array<TexturePackerFrame> = [];
+        var frames:Array<TexturePackerFrame> = [];
 
-		// Read in frames
-		for (key in Reflect.fields(structuredJson.frames)) 
-		{
-			var frameJson:TexturePackerFrame = Reflect.field(structuredJson.frames, key);
-			frameJson.name = key;
+        // Read in frames
+        for (key in Reflect.fields(structuredJson.frames))
+        {
+            if (Std.is (structuredJson.frames, Array)) {
+                if(Reflect.field(structuredJson.frames is Array)
+                var frameJson:TexturePackerFrame = Reflect.field(structuredJson.frames, key);
+                frames.push(frameJson);
+            } else {
+                if(Reflect.field(structuredJson.frames is Array)
+                var frameJson:TexturePackerFrame = Reflect.field(structuredJson.frames, key);
+                frames.push(frameJson);
+            }
 
-			frames.push(frameJson);
-		}
+        }
 
-		return frames;
-	}
+        return frames;
+    }
 
-	public static function addToTilesheet(tilesheet:Tilesheet, frames:Array<TexturePackerFrame>):Map<String, Int>
-	{
-		var idMap:Map<String, Int> = new Map<String, Int>();
+    public static function addToTilesheet(tilesheet:Tilesheet, frames:Array<TexturePackerFrame>):Map<String, Int>
+    {
+        var idMap:Map<String, Int> = new Map<String, Int>();
 
-		for (i in 0...frames.length)
-		{
-			var frame = frames[i];
-			
-			var center = new flash.geom.Point(0, 0);
+        for (i in 0...frames.length)
+        {
+            var frame = frames[i];
 
-			if (frame.trimmed)
-			{
-				// Calculate adjusted center for trimmed sprite
-				center.x -= frame.spriteSourceSize.x;
-				center.y -= frame.spriteSourceSize.y;
-			}
+            var center = new flash.geom.Point(0, 0);
 
-			var id = tilesheet.addTileRect(
-				new flash.geom.Rectangle(
-					frame.frame.x, frame.frame.y,
-					frame.frame.w, frame.frame.h
-				),
-				center
-			);
+            if (frame.trimmed)
+            {
+                // Calculate adjusted center for trimmed sprite
+                center.x -= frame.spriteSourceSize.x;
+                center.y -= frame.spriteSourceSize.y;
+            }
 
-			idMap[frame.name] = id;
-		}
+            var id = tilesheet.addTileRect(
+                new flash.geom.Rectangle(
+                frame.frame.x, frame.frame.y,
+                frame.frame.w, frame.frame.h
+                ),
+                center
+            );
 
-		return idMap;
-	}
+            idMap[frame.name] = id;
+        }
+
+        return idMap;
+    }
 }
 
 // JSON parsing type
 private typedef SheetJson =
 {
-	frames:Dynamic,
-	meta:Dynamic
+    frames:Dynamic,
+    meta:Dynamic
 }
